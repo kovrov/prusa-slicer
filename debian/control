@@ -1,0 +1,57 @@
+Source: prusaslicer
+Section: graphics
+Priority: optional
+Maintainer: Sergey Kovrov <kovrov@gmail.com>
+Build-Depends:
+ debhelper-compat (= 13),
+ cmake (>= 3.13),
+ ninja-build,
+ pkg-config,
+ libboost-dev (>= 1.83),
+ libboost-filesystem-dev,
+ libboost-iostreams-dev,
+ libboost-locale-dev,
+ libboost-log-dev,
+ libboost-nowide-dev,
+ libboost-regex-dev,
+ libboost-thread-dev,
+ libeigen3-dev (>= 3.3.7),
+ libtbb-dev,
+ libcgal-dev,
+ libcurl4-openssl-dev,
+ zlib1g-dev,
+ libexpat1-dev,
+ libpng-dev,
+ libjpeg-dev,
+ libgl-dev,
+ libglu1-mesa-dev,
+ libglew-dev,
+ libcereal-dev,
+ libnlopt-dev,
+ libnlopt-cxx-dev,
+ libopenvdb-dev (>= 5.0),
+ libwxgtk3.2-dev,
+ libwxgtk-webview3.2-dev,
+ libwebkit2gtk-4.1-dev,
+ libgtk-3-dev,
+ libdbus-1-dev,
+ libqhull-dev,
+ nlohmann-json3-dev,
+ libssl-dev,
+ libgmp-dev,
+ libmpfr-dev,
+ libblosc-dev,
+ libocct-data-exchange-dev,
+ libocct-modeling-algorithms-dev,
+ libz3-dev,
+Standards-Version: 4.6.2
+Homepage: https://github.com/prusa3d/PrusaSlicer
+Rules-Requires-Root: no
+
+Package: prusaslicer
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: G-code generator for 3D printers (Prusa and others)
+ PrusaSlicer takes 3D models (STL, OBJ, AMF, 3MF, STEP) and converts them
+ into G-code instructions for FDM printers or layer images for SLA printers.
+ It supports Prusa printers as well as many third-party printers.
