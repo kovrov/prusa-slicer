@@ -1,0 +1,5 @@
+CompileFlags:
+  CompilationDatabase: build-default
+  Compiler: clang++
+  Remove:
+    - -fext-numeric-literals

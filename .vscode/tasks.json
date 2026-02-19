@@ -1,0 +1,95 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "PPA: Install build dependencies",
+            "type": "shell",
+            "command": "sudo apt-get build-dep -y .",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "PPA: List missing build dependencies",
+            "type": "shell",
+            "command": "dpkg-checkbuilddeps 2>&1 || true",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "PPA: Create source package",
+            "type": "shell",
+            "command": "bash debian/build-ppa-source.sh",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "PPA: dry-run build (full cycle: pack -> unpack -> build)",
+            "type": "shell",
+            "command": "bash debian/build-test-local.sh",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "PPA: dpkg-buildpackage",
+            "type": "shell",
+            "command": "dpkg-buildpackage -us -uc -j4 -b",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "PPA: Upload to ppa:kovrov/prusa-slicer",
+            "type": "shell",
+            "command": "dput ppa:kovrov/prusa-slicer $(ls -t ../prusaslicer_*_source.changes | head -1)",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "clear": true
+            },
+            "problemMatcher": []
+        }
+    ]
+}

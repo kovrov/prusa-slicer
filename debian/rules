@@ -1,0 +1,82 @@
+#!/usr/bin/make -f
+
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+DPKG_EXPORT_BUILDFLAGS = 1
+include /usr/share/dpkg/buildflags.mk
+
+BUILD_TMPDIR = /tmp/prusaslicer-build
+DEPS_PREFIX = $(BUILD_TMPDIR)/deps-install/usr
+NUMJOBS = 4
+
+%:
+	dh $@
+
+override_dh_auto_configure:
+	mkdir -p $(BUILD_TMPDIR)
+
+	# ---- Build heatshrink (static) ----
+	cmake -S third_party/heatshrink -B $(BUILD_TMPDIR)/build-heatshrink \
+		-G Ninja \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DBUILD_SHARED_LIBS=OFF \
+		-DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+		-DCMAKE_INSTALL_PREFIX=$(DEPS_PREFIX)
+	cmake --build $(BUILD_TMPDIR)/build-heatshrink -j $(NUMJOBS)
+	DESTDIR= cmake --install $(BUILD_TMPDIR)/build-heatshrink
+
+	# ---- Build NanoSVG ----
+	cmake -S third_party/nanosvg -B $(BUILD_TMPDIR)/build-nanosvg \
+		-G Ninja \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DBUILD_SHARED_LIBS=OFF \
+		-DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+		-DCMAKE_INSTALL_PREFIX=$(DEPS_PREFIX)
+	cmake --build $(BUILD_TMPDIR)/build-nanosvg -j $(NUMJOBS)
+	DESTDIR= cmake --install $(BUILD_TMPDIR)/build-nanosvg
+	# Fix NanoSVG include paths: code uses both #include <nanosvg/nanosvg.h> and #include <nanosvgrast.h>
+	# so INTERFACE_INCLUDE_DIRECTORIES needs both include/ and include/nanosvg/
+	sed -i 's|"$${_IMPORT_PREFIX}/include/nanosvg"|"$${_IMPORT_PREFIX}/include;$${_IMPORT_PREFIX}/include/nanosvg"|g' $(DEPS_PREFIX)/lib/cmake/NanoSVG/NanoSVGTargets.cmake
+
+	# ---- Build LibBGCode (static, finds heatshrink via prefix) ----
+	cmake -S third_party/libbgcode -B $(BUILD_TMPDIR)/build-libbgcode \
+		-G Ninja \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DBUILD_SHARED_LIBS=OFF \
+		-DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+		-DCMAKE_PREFIX_PATH=$(DEPS_PREFIX) \
+		-DCMAKE_INSTALL_PREFIX=$(DEPS_PREFIX) \
+		-DLibBGCode_BUILD_TESTS=OFF \
+		-DLibBGCode_BUILD_CMD_TOOL=OFF
+	cmake --build $(BUILD_TMPDIR)/build-libbgcode -j $(NUMJOBS)
+	DESTDIR= cmake --install $(BUILD_TMPDIR)/build-libbgcode
+
+	# ---- Configure PrusaSlicer (build dir out-of-tree) ----
+	dh_auto_configure -B $(BUILD_TMPDIR)/build-prusaslicer -- \
+		-G Ninja \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DSLIC3R_STATIC=OFF \
+		-DSLIC3R_GTK=3 \
+		-DSLIC3R_PCH=ON \
+		-DSLIC3R_FHS=ON \
+		-DSLIC3R_ENABLE_FORMAT_STEP=ON \
+		-DCMAKE_INSTALL_PREFIX=/usr \
+		-DCMAKE_PREFIX_PATH=$(DEPS_PREFIX) \
+		-DPrusaSlicer_BUILD_DEPS=OFF \
+		-DCMAKE_POLICY_DEFAULT_CMP0167=NEW \
+		-DOPENVDB_FIND_MODULE_PATH=/usr/lib/x86_64-linux-gnu/cmake/OpenVDB \
+-DSLIC3R_BUILD_TESTS=OFF \
+		"-DCMAKE_CXX_FLAGS=-isystem $(DEPS_PREFIX)/include -DBOOST_PROCESS_VERSION=1"
+
+override_dh_auto_build:
+	dh_auto_build -B $(BUILD_TMPDIR)/build-prusaslicer -- -j $(NUMJOBS)
+
+override_dh_auto_install:
+	dh_auto_install -B $(BUILD_TMPDIR)/build-prusaslicer --destdir=debian/prusaslicer
+
+override_dh_auto_test:
+	# Tests require GPU/display, skip in build environment
+	true
+
+override_dh_auto_clean:
+	dh_auto_clean -B $(BUILD_TMPDIR)/build-prusaslicer
+	rm -rf $(BUILD_TMPDIR)

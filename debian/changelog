@@ -1,0 +1,8 @@
+prusaslicer (2.9.4-0ppa2~questing1) questing; urgency=medium
+
+  * Initial PPA release for Ubuntu 25.10 (Questing Quokka)
+  * Build against system libraries where possible
+  * Bundle heatshrink, NanoSVG, and LibBGCode (not in Ubuntu repos)
+  * Add missing libwebkit2gtk-4.1-dev build dependency
+
+ -- Sergey Kovrov <kovrov@gmail.com>  Fri, 14 Feb 2026 12:00:00 +0000
