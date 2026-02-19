@@ -110,10 +110,10 @@ GCodeSender::connect(std::string devname, unsigned int baud_rate)
     
     // this gives some work to the io_service before it is started
     // (post() runs the supplied function in its thread)
-    this->io.post(boost::bind(&GCodeSender::do_read, this));
+    boost::asio::post(this->io, boost::bind(&GCodeSender::do_read, this));
     
     // start reading in the background thread
-    boost::thread t(boost::bind(&boost::asio::io_service::run, &this->io));
+    boost::thread t(boost::bind(&boost::asio::io_context::run, &this->io));
     this->background_thread.swap(t);
     
     // always send a M105 to check for connection because firmware might be silent on connect
@@ -170,7 +170,7 @@ GCodeSender::disconnect()
     if (!this->open) return;
     this->open = false;
     this->connected = false;
-    this->io.post(boost::bind(&GCodeSender::do_close, this));
+    boost::asio::post(this->io, boost::bind(&GCodeSender::do_close, this));
     this->background_thread.join();
     this->io.reset();
     /*
@@ -463,7 +463,7 @@ GCodeSender::send(const std::string &line, bool priority)
 void
 GCodeSender::send()
 {
-    this->io.post(boost::bind(&GCodeSender::do_send, this));
+    boost::asio::post(this->io, boost::bind(&GCodeSender::do_send, this));
 }
 
 void
