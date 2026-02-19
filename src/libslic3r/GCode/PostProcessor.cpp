@@ -152,7 +152,10 @@ static int run_script(const std::string &script, const std::string &gcode, std::
 
 #include <cstdlib>   // getenv()
 #include <sstream>
-#include <boost/process.hpp>
+#include <boost/process/v1/child.hpp>
+#include <boost/process/v1/io.hpp>
+#include <boost/process/v1/pipe.hpp>
+#include <boost/process/v1/args.hpp>
 
 namespace process = boost::process;
 
