@@ -567,7 +567,8 @@ bool TextCtrl::value_was_changed()
         return true;
 
     boost::any val = m_value;
-    wxString ret_str = static_cast<text_ctrl*>(window)->GetValue();
+    // When in nil state, use na_value() so nil is detected correctly regardless of displayed placeholder.
+    wxString ret_str = m_is_na ? na_value() : static_cast<text_ctrl*>(window)->GetValue();
     // update m_value!
     // ret_str might be changed inside get_value_by_opt_type
     get_value_by_opt_type(ret_str);
@@ -598,7 +599,8 @@ bool TextCtrl::value_was_changed()
 
 void TextCtrl::propagate_value()
 {
-    wxString val = dynamic_cast<text_ctrl*>(window)->GetValue();
+    // When in nil state but displaying a default placeholder, treat as na_value() for parsing.
+    wxString val = m_is_na ? na_value() : dynamic_cast<text_ctrl*>(window)->GetValue();
     if (m_opt.nullable && val != na_value())
         m_last_meaningful_value = val;
 
@@ -613,17 +615,23 @@ void TextCtrl::propagate_value()
 void TextCtrl::set_value(const boost::any& value, bool change_event/* = false*/) {
     m_disable_change_event = !change_event;
     if (m_opt.nullable) {
-        const bool m_is_na_val = boost::any_cast<wxString>(value) == na_value();
-        if (!m_is_na_val)
+        const bool is_na_val = boost::any_cast<wxString>(value) == na_value();
+        if (is_na_val) {
+            m_is_na = true;
+            dynamic_cast<text_ctrl*>(window)->SetValue(get_nil_display_str());
+        } else {
+            m_is_na = false;
             m_last_meaningful_value = value;
-        dynamic_cast<text_ctrl*>(window)->SetValue(m_is_na_val ? na_value() : boost::any_cast<wxString>(value));
+            dynamic_cast<text_ctrl*>(window)->SetValue(boost::any_cast<wxString>(value));
+        }
     }
     else
         dynamic_cast<text_ctrl*>(window)->SetValue(boost::any_cast<wxString>(value));
     m_disable_change_event = false;
 
     if (!change_event) {
-        wxString ret_str = static_cast<text_ctrl*>(window)->GetValue();
+        // When in nil state, use na_value() so get_value_by_opt_type correctly stores nil in m_value.
+        wxString ret_str = m_is_na ? na_value() : static_cast<text_ctrl*>(window)->GetValue();
         /* Update m_value to correct work of next value_was_changed().
          * But after checking of entered value, don't fix the "incorrect" value and don't show a warning message,
          * just clear m_value in this case.
@@ -634,19 +642,48 @@ void TextCtrl::set_value(const boost::any& value, bool change_event/* = false*/)
 
 void TextCtrl::set_last_meaningful_value()
 {
+    m_is_na = false;
     dynamic_cast<text_ctrl*>(window)->SetValue(boost::any_cast<wxString>(m_last_meaningful_value));
     propagate_value();
 }
 
 void TextCtrl::set_na_value()
 {
-    dynamic_cast<text_ctrl*>(window)->SetValue(na_value());
+    m_is_na = true;
+    dynamic_cast<text_ctrl*>(window)->SetValue(get_nil_display_str());
     propagate_value();
+}
+
+// Returns a string to display when the field is in nil state.
+// Shows the option's default value (as a hint) instead of raw "N/A" when possible.
+// Mirrors the type-specific formatting used in BUILD() to produce consistent display.
+wxString TextCtrl::get_nil_display_str() const
+{
+    if (m_opt.default_value && !m_opt.default_value->is_nil()) {
+        switch (m_opt.type) {
+        case coFloat:
+            return double_to_string(m_opt.default_value->getFloat());
+        case coPercent:
+            return double_to_string(m_opt.default_value->getFloat()) + "%";
+        case coFloats:
+            return double_to_string(m_opt.get_default_value<ConfigOptionFloats>()->get_at(m_opt_idx));
+        case coPercents:
+            return double_to_string(m_opt.get_default_value<ConfigOptionPercents>()->get_at(m_opt_idx));
+        case coInt:
+            return wxString::Format("%d", m_opt.default_value->getInt());
+        case coInts:
+            return wxString::Format("%d", m_opt.get_default_value<ConfigOptionInts>()->get_at(m_opt_idx));
+        default:
+            break;
+        }
+    }
+    return na_value();
 }
 
 boost::any& TextCtrl::get_value()
 {
-	wxString ret_str = static_cast<text_ctrl*>(window)->GetValue();
+    // When in nil state but showing a default placeholder, pass na_value() for nil detection.
+	wxString ret_str = m_is_na ? na_value() : static_cast<text_ctrl*>(window)->GetValue();
 	// update m_value
 	get_value_by_opt_type(ret_str);
 
@@ -959,16 +996,40 @@ void SpinCtrl::BUILD() {
 	window = dynamic_cast<wxWindow*>(temp);
 }
 
+// Returns the default integer to display when the spinner is in nil state, or UNDEF_VALUE if unavailable.
+int SpinCtrl::get_nil_display_int() const
+{
+    if (m_opt.default_value && !m_opt.default_value->is_nil()) {
+        switch (m_opt.type) {
+        case coInt:
+            return m_opt.default_value->getInt();
+        case coInts: {
+            int val = m_opt.get_default_value<ConfigOptionInts>()->get_at(m_opt_idx);
+            return val != ConfigOptionIntsNullable::nil_value() ? val : UNDEF_VALUE;
+        }
+        default:
+            break;
+        }
+    }
+    return UNDEF_VALUE;
+}
+
 void SpinCtrl::set_value(const boost::any& value, bool change_event/* = false*/)
 {
     m_disable_change_event = !change_event;
     tmp_value = boost::any_cast<int>(value);
     m_value = value;
     if (m_opt.nullable) {
-        const bool m_is_na_val = tmp_value == ConfigOptionIntsNullable::nil_value();
-        if (m_is_na_val)
-            dynamic_cast<::SpinInput*>(window)->SetValue(na_value(true));
-        else {
+        const bool is_na_val = tmp_value == ConfigOptionIntsNullable::nil_value();
+        if (is_na_val) {
+            m_is_na = true;
+            const int def_val = get_nil_display_int();
+            if (def_val != UNDEF_VALUE)
+                dynamic_cast<::SpinInput*>(window)->SetValue(def_val);
+            else
+                dynamic_cast<::SpinInput*>(window)->SetValue(na_value(true));
+        } else {
+            m_is_na = false;
             m_last_meaningful_value = value;
             dynamic_cast<::SpinInput*>(window)->SetValue(tmp_value);
         }
@@ -980,6 +1041,7 @@ void SpinCtrl::set_value(const boost::any& value, bool change_event/* = false*/)
 
 void SpinCtrl::set_last_meaningful_value()
 {
+    m_is_na = false;
     const int val = boost::any_cast<int>(m_last_meaningful_value);
     dynamic_cast<::SpinInput*>(window)->SetValue(val);
     tmp_value = val;
@@ -988,13 +1050,22 @@ void SpinCtrl::set_last_meaningful_value()
 
 void SpinCtrl::set_na_value()
 {
-    dynamic_cast<::SpinInput*>(window)->SetValue(na_value(true));
+    m_is_na = true;
     m_value = ConfigOptionIntsNullable::nil_value();
+    const int def_val = get_nil_display_int();
+    if (def_val != UNDEF_VALUE)
+        dynamic_cast<::SpinInput*>(window)->SetValue(def_val);
+    else
+        dynamic_cast<::SpinInput*>(window)->SetValue(na_value(true));
     propagate_value();
 }
 
 boost::any& SpinCtrl::get_value()
 {
+    // When in nil state, return the stored nil m_value regardless of displayed placeholder.
+    if (m_is_na)
+        return m_value;
+
     ::SpinInput* spin = static_cast<::SpinInput*>(window);
     if (spin->GetTextValue() == na_value(true))
         return m_value;

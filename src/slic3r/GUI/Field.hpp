@@ -327,6 +327,13 @@ public:
     void    set_last_meaningful_value() override;
     void	set_na_value() override;
 
+private:
+    // True when the field is in nil (N/A) state but displaying a placeholder default value.
+    bool    m_is_na { false };
+    wxString get_nil_display_str() const;
+
+public:
+
 	boost::any&		get_value() override;
 
     void            msw_rescale() override;
@@ -375,6 +382,9 @@ class SpinCtrl : public Field {
 	using Field::Field;
 private:
 	static const int UNDEF_VALUE = INT_MIN;
+    // True when in nil state but displaying a placeholder default value.
+    bool            m_is_na { false };
+    int             get_nil_display_int() const;
 
 public:
 	SpinCtrl(const ConfigOptionDef& opt, const t_config_option_key& id) : Field(opt, id), tmp_value(UNDEF_VALUE) {}
