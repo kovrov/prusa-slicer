@@ -4636,6 +4636,22 @@ void PrintConfigDef::init_sla_params()
     def->min = 0;
     def->set_default_value(new ConfigOptionFloat(15));
 
+    def = this->add("num_initial_exposure_layers", coInt);
+    def->label = L("Number of initial exposure layers");
+    def->tooltip = L("Number of layers at the bottom of the print that use the full "
+                     "initial exposure time before transitioning to normal exposure time.");
+    def->sidetext = L("layers");
+    def->min = 1;
+    def->set_default_value(new ConfigOptionInt(1));
+
+    def = this->add("off_time", coFloat);
+    def->label = L("Light-off time");
+    def->tooltip = L("Delay after UV exposure ends before the build platform starts lifting. "
+                     "Also known as rest time or off time.");
+    def->sidetext = L("s");
+    def->min = 0;
+    def->set_default_value(new ConfigOptionFloat(0.5));
+
     def = this->add("material_correction", coFloats);
     def->full_label = L("Correction for expansion");
     def->tooltip  = L("Correction for expansion");
@@ -4932,6 +4948,27 @@ void PrintConfigDef::init_sla_params()
     def->min = float(SCALING_FACTOR);
     def->mode = comExpert;
     def->set_default_value(new ConfigOptionFloat(0.001));
+
+    def = this->add("z_lift_distance", coFloat);
+    def->label = L("Lift distance");
+    def->tooltip = L("Distance the build platform lifts after each layer exposure.");
+    def->sidetext = L("mm");
+    def->min = 0;
+    def->set_default_value(new ConfigOptionFloat(8.0));
+
+    def = this->add("z_lift_speed", coFloat);
+    def->label = L("Lift speed");
+    def->tooltip = L("Speed at which the build platform lifts after each layer exposure.");
+    def->sidetext = L("mm/s");
+    def->min = 0.1;
+    def->set_default_value(new ConfigOptionFloat(2.0));
+
+    def = this->add("z_retract_speed", coFloat);
+    def->label = L("Retract speed");
+    def->tooltip = L("Speed at which the build platform returns to the next layer position.");
+    def->sidetext = L("mm/s");
+    def->min = 0.1;
+    def->set_default_value(new ConfigOptionFloat(3.0));
 
     // Declare retract values for material profile, overriding the print and printer profiles.
     for (const char* opt_key : {
@@ -5648,6 +5685,20 @@ void  handle_legacy_sla(DynamicPrintConfig &config)
                 auto* opt = config.opt<ConfigOptionFloat>(corr_z, true);
                 opt->value = config.opt<ConfigOptionFloats>(corr)->values[1];
             }
+        }
+    }
+
+    // Set defaults for SLA material options added after initial release, when loading old presets.
+    // Guard with exposure_time: only SLA material configs have this key.
+    if (config.has("exposure_time")) {
+        if (!config.has("num_initial_exposure_layers")) {
+            auto* opt = config.opt<ConfigOptionInt>("num_initial_exposure_layers", true);
+            opt->value = 1;
+        }
+
+        if (!config.has("off_time")) {
+            auto* opt = config.opt<ConfigOptionFloat>("off_time", true);
+            opt->value = 0.5;
         }
     }
 

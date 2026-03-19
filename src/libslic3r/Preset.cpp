@@ -644,6 +644,8 @@ static std::vector<std::string> s_Preset_sla_material_options{
     "material_density",
     "exposure_time",
     "initial_exposure_time",
+    "num_initial_exposure_layers",
+    "off_time",
     "material_correction",
     "material_correction_x",
     "material_correction_y",
@@ -687,7 +689,11 @@ static std::vector<std::string> s_Preset_sla_material_options{
     "material_ow_faded_layers",
     "material_ow_absolute_correction",
     "material_ow_elefant_foot_compensation",
-    "material_ow_pad_wall_slope"
+    "material_ow_pad_wall_slope",
+
+    "z_lift_distance",
+    "z_lift_speed",
+    "z_retract_speed"
 };
 
 static std::vector<std::string> s_Preset_sla_tilt_options{

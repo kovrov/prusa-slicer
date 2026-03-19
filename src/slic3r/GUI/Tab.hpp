@@ -164,6 +164,7 @@ public:
 			return *m_item_color;
 	}
     bool get_show() const { return m_show; }
+    void set_show(bool show) { m_show = show; }
 
 protected:
 	// Color of TreeCtrlItem. The wxColour will be updated only if the new wxColour pointer differs from the currently rendered one.

@@ -95,6 +95,11 @@ TEST_CASE("PM7M archive content verification", "[sla_archives]") {
         {"display_mirror_x", "1"},
         {"display_mirror_y", "0"},
         {"max_print_height", "300"},
+        // Explicit lift/retract and light-off values so we can verify them in the archive.
+        {"z_lift_distance", "6"},
+        {"z_lift_speed",    "3.5"},
+        {"z_retract_speed", "4.5"},
+        {"off_time",        "1.5"},
     });
 
     DynamicPrintConfig cfg;
@@ -321,6 +326,41 @@ TEST_CASE("PM7M archive content verification", "[sla_archives]") {
         // JSON must end with a newline
         CHECK(!json.empty());
         CHECK(json.back() == '\n');
+    }
+
+    SECTION("Archive contains correct lift/retract and light-off parameters") {
+        // Values set explicitly above: z_lift_distance=6, z_lift_speed=3.5,
+        // z_retract_speed=4.5, off_time=1.5
+
+        // -- slicepara in anycubic_photon_resins.pwsp --
+        const EntryBuffer *pwsp = find_entry("anycubic_photon_resins.pwsp");
+        REQUIRE(pwsp != nullptr);
+        std::string settings_json(pwsp->buf.begin(), pwsp->buf.end());
+
+        // off_time (light-off delay written to slicepara)
+        CHECK(std::regex_search(settings_json, std::regex(R"("off_time"\s*:\s*1\.5\b)")));
+        // zup_height (lift distance)
+        CHECK(std::regex_search(settings_json, std::regex(R"("zup_height"\s*:\s*6\.0\b)")));
+        // zup_speed (lift speed)
+        CHECK(std::regex_search(settings_json, std::regex(R"("zup_speed"\s*:\s*3\.5\b)")));
+        // zdown_speed (retract speed)
+        CHECK(std::regex_search(settings_json, std::regex(R"("zdown_speed"\s*:\s*4\.5\b)")));
+
+        // -- layers_controller.conf: every layer entry carries the lift parameters --
+        const EntryBuffer *layers_ctl = find_entry("layers_controller.conf");
+        REQUIRE(layers_ctl != nullptr);
+
+        std::string layers_json(layers_ctl->buf.begin(), layers_ctl->buf.end());
+        std::istringstream lss(layers_json);
+        boost::property_tree::ptree lpt;
+        boost::property_tree::json_parser::read_json(lss, lpt);
+
+        for (const auto &kv : lpt.get_child("paras")) {
+            float zh = kv.second.get<float>("zup_height");
+            float zs = kv.second.get<float>("zup_speed");
+            CHECK(std::abs(zh - 6.0f) < 0.01f);
+            CHECK(std::abs(zs - 3.5f) < 0.01f);
+        }
     }
 
     boost::filesystem::remove(fname);

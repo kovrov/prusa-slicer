@@ -151,11 +151,11 @@ std::string generate_settings_json(const SLAPrint &print,
     double layer_h = round_f(get_cfg_value_f(cfg, "layer_height"), 4);
     double exp_time = round_f(get_cfg_value_f(cfg, "exposure_time"), 2);
     double bot_exp = round_f(get_cfg_value_f(cfg, "initial_exposure_time"), 2);
-    int bot_layers = get_cfg_value_i(cfg, "faded_layers");
-    double lift_h = 8.0;
-    double lift_speed = 2.0;
-    double ret_speed = 3.0;
-    double wait_time = 0.5;
+    int bot_layers = get_cfg_value_i(cfg, "num_initial_exposure_layers");
+    double lift_h     = round_f(get_cfg_value_f(cfg, "z_lift_distance", 8.0f), 2);
+    double lift_speed = round_f(get_cfg_value_f(cfg, "z_lift_speed",    2.0f), 2);
+    double ret_speed  = round_f(get_cfg_value_f(cfg, "z_retract_speed", 3.0f), 2);
+    double wait_time = round_f(get_cfg_value_f(cfg, "off_time", 0.5f), 2);
     int pixel_um = static_cast<int>(std::round(pixel_size_um));
 
     if (bot_layers > (int) layer_count) {
@@ -531,9 +531,11 @@ void AnycubicSLAZipArchive::export_print(const std::string fname,
     float bot_layer_h = get_cfg_value_f(cfg, "initial_layer_height");
     float exp_time = get_cfg_value_f(cfg, "exposure_time");
     float bot_exp = get_cfg_value_f(cfg, "initial_exposure_time");
-    int bot_layers = get_cfg_value_i(cfg, "faded_layers");
-    float lift_h = 8.0f;
-    float lift_speed = 2.0f;
+    int bot_layers = get_cfg_value_i(cfg, "num_initial_exposure_layers");
+    float lift_h     = get_cfg_value_f(cfg, "z_lift_distance", 8.0f);
+    float lift_speed = get_cfg_value_f(cfg, "z_lift_speed",    2.0f);
+    float ret_speed  = get_cfg_value_f(cfg, "z_retract_speed", 3.0f);
+    float wait_time  = get_cfg_value_f(cfg, "off_time", 0.5f);
 
     if (bot_layers > (int) layer_count) {
         bot_layers = layer_count;
@@ -553,8 +555,8 @@ void AnycubicSLAZipArchive::export_print(const std::string fname,
 
     // Estimate print time
     float print_time = (bot_layers * bot_exp) + ((layer_count - bot_layers) * exp_time) +
-        (layer_count * lift_h / 3.0f) +                             // retract
-        (layer_count * lift_h / lift_speed) + (layer_count * 0.5f); // wait time
+        (layer_count * lift_h / ret_speed) +                        // retract
+        (layer_count * lift_h / lift_speed) + (layer_count * wait_time);
 
     float total_height = (bot_layers * bot_layer_h) + ((layer_count - bot_layers) * layer_h);
 

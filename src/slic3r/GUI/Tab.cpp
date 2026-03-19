@@ -5481,6 +5481,8 @@ void TabSLAMaterial::build()
     optgroup = page->new_optgroup(L("Exposure"));
     optgroup->append_single_option_line("exposure_time");
     optgroup->append_single_option_line("initial_exposure_time");
+    optgroup->append_single_option_line("num_initial_exposure_layers");
+    optgroup->append_single_option_line("off_time");
 
     optgroup = page->new_optgroup(L("Corrections"));
     auto line = Line{ m_config->def()->get("material_correction")->full_label, "" };
@@ -5500,6 +5502,11 @@ void TabSLAMaterial::build()
         return description_line_widget(parent, &m_z_correction_to_mm_description);
     };
     optgroup->append_line(line);
+
+    optgroup = page->new_optgroup(L("Motion"));
+    optgroup->append_single_option_line("z_lift_distance");
+    optgroup->append_single_option_line("z_lift_speed");
+    optgroup->append_single_option_line("z_retract_speed");
 
     add_material_overrides_page();
 
@@ -5807,6 +5814,25 @@ void TabSLAMaterial::update_sla_prusa_specific_visibility()
             og_it->get()->Show(m_mode >= comAdvanced && !is_prusa_printer());
 
         Layout();
+    }
+
+    if (m_active_page && m_active_page->title() == "Material") {
+        auto og_it = std::find_if(m_active_page->m_optgroups.begin(), m_active_page->m_optgroups.end(),
+                        [](const ConfigOptionsGroupShp og) { return og->title == "Motion"; });
+        if (og_it != m_active_page->m_optgroups.end()) {
+            og_it->get()->Show(!is_prusa_printer());
+            Layout();
+        }
+    }
+
+    // Hide the entire "Material printing profile" page for non-SL1-archive printers —
+    // all its content (print speed, tilt profiles) is SL1-specific.
+    const bool sl1 = is_prusa_printer();
+    auto page_it = std::find_if(m_pages.begin(), m_pages.end(),
+                    [](const PageShp& p) { return p->title() == "Material printing profile"; });
+    if (page_it != m_pages.end() && (*page_it)->get_show() != sl1) {
+        (*page_it)->set_show(sl1);
+        rebuild_page_tree();
     }
 }
 

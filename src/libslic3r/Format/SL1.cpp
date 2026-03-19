@@ -469,10 +469,18 @@ void fill_slicerconf(ConfMap &m, const SLAPrint &print)
     static constexpr auto banned_keys = { 
 		"compatible_printers"sv,
         "compatible_prints"sv,
+        "material_ow_z_lift_distance"sv,
+        "material_ow_z_lift_speed"sv,
+        "material_ow_z_retract_speed"sv,
+        "num_initial_exposure_layers"sv,
+        "off_time"sv,
         //FIXME The print host keys should not be exported to full_print_config anymore. The following keys may likely be removed.
         "print_host"sv,
         "printhost_apikey"sv,
-        "printhost_cafile"sv
+        "printhost_cafile"sv,
+        "z_lift_distance"sv,
+        "z_lift_speed"sv,
+        "z_retract_speed"sv
     };
     
     assert(std::is_sorted(banned_keys.begin(), banned_keys.end()));

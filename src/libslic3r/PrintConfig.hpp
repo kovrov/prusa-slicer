@@ -1285,6 +1285,8 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionFloat,                       material_density))
     ((ConfigOptionFloat,                       exposure_time))
     ((ConfigOptionFloat,                       initial_exposure_time))
+    ((ConfigOptionInt,                         num_initial_exposure_layers))
+    ((ConfigOptionFloat,                       off_time))
     ((ConfigOptionFloats,                      material_correction))
     ((ConfigOptionFloat,                       material_correction_x))
     ((ConfigOptionFloat,                       material_correction_y))
@@ -1315,6 +1317,9 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionFloatNullable,               material_ow_elefant_foot_compensation))
     ((ConfigOptionFloatNullable,               material_ow_absolute_correction))
     ((ConfigOptionFloatNullable,               material_ow_pad_wall_slope))
+    ((ConfigOptionFloat,                       z_lift_distance))
+    ((ConfigOptionFloat,                       z_lift_speed))
+    ((ConfigOptionFloat,                       z_retract_speed))
     ((ConfigOptionFloat,                       area_fill))
     ((ConfigOptionIntNullable,                 printing_temperature))
     
