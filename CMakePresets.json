@@ -14,7 +14,8 @@
                 "SLIC3R_PCH": true,
                 "CMAKE_INSTALL_PREFIX": "${sourceDir}/build-default/dist",
                 "PrusaSlicer_DEPS_PRESET": "default",
-                "PrusaSlicer_DEPS_OUTPUT_QUIET": false
+                "PrusaSlicer_DEPS_OUTPUT_QUIET": false,
+                "CMAKE_PREFIX_PATH": "${sourceDir}/deps/build-default/destdir/usr/local"
             }
         },
         {

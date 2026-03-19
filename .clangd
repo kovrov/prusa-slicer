@@ -1,0 +1,3 @@
+CompileFlags:
+  CompilationDatabase: "build-default/"
+  Remove: [-fext-numeric-literals]
