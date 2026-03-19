@@ -1185,7 +1185,7 @@ struct SLALayerInfo {
     bool is_fast{false};
     double models_volume{0.};
     double supports_volume{0.};
-
+    SLAPrintStatistics::LayerTimeBreakdown breakdown{};
 };
 
 
@@ -1242,12 +1242,39 @@ static ExPolygons printlayerfn(const SLAPrint& print, size_t layer_idx, std::vec
     for(ExPolygon& poly : model_polygons) trslices.emplace_back(std::move(poly));
     for(ExPolygon& poly : supports_polygons) trslices.emplace_back(std::move(poly));
 
-    const auto [layer_time, is_fast_layer] = calculate_layer_time(
-        prepare_sla_time_estimate_input(print.printer_config(), print.material_config(),
-            print.default_object_config(), layer_idx, l_height, layer_area));
+    const SLAMaterialConfig& material_config = print.material_config();
+    const SLATimeEstimateInput in = prepare_sla_time_estimate_input(print.printer_config(), material_config,
+        print.default_object_config(), layer_idx, l_height, layer_area);
+
+    double layer_time = 0.;
+    bool is_fast_layer = false;
+    SLAPrintStatistics::LayerTimeBreakdown breakdown;
+
+    if (in.is_prusa_print) {
+        std::tie(layer_time, is_fast_layer) = calculate_layer_time(in);
+        // SL1 uses a linear fade from the first layer (firmware-driven).
+        const double delta_fade_time = (in.init_exp_time - in.exp_time) / (in.fade_layers_cnt + 1);
+        breakdown.exposure = std::max(in.exp_time, in.init_exp_time - int(layer_idx) * delta_fade_time);
+    }
+    else {
+        // For non-Prusa (e.g. Anycubic) printers, compute lift time from the same
+        // z_lift_distance/speed values that are written to the archive.
+        is_fast_layer = in.layer_area <= in.display_area * in.area_fill;
+        const double lift_dist  = material_config.z_lift_distance.getFloat();
+        const double lift_speed = material_config.z_lift_speed.getFloat();
+        const double ret_speed  = material_config.z_retract_speed.getFloat();
+        breakdown.lift      = (lift_speed > 0. ? lift_dist / lift_speed : 0.)
+                            + (ret_speed  > 0. ? lift_dist / ret_speed  : 0.);
+        breakdown.light_off = material_config.off_time.getFloat();
+        // Hard cut-over after num_init bottom layers, matching the per-layer
+        // exposure_time values written explicitly to the archive.
+        const int num_init  = material_config.num_initial_exposure_layers.getInt();
+        breakdown.exposure  = (int(layer_idx) < num_init) ? in.init_exp_time : in.exp_time;
+        layer_time          = breakdown.lift + breakdown.light_off + breakdown.exposure;
+    }
 
     // Collect values for this layer.
-    layers_info[layer_idx] = SLALayerInfo{layer_time, layer_area, is_fast_layer, models_volume, supports_volume};
+    layers_info[layer_idx] = SLALayerInfo{layer_time, layer_area, is_fast_layer, models_volume, supports_volume, breakdown};
 
     return union_ex(trslices);
 };
@@ -1267,6 +1294,7 @@ static SLAPrintStatistics create_sla_statistics(const std::vector<SLALayerInfo>&
             print_statistics.layers_areas.emplace_back(info.area);
             print_statistics.estimated_print_time += info.time;
             print_statistics.layers_times_running_total.emplace_back(info.time + (i==0 ? 0. : print_statistics.layers_times_running_total[i-1]));
+            print_statistics.layers_times_breakdown.push_back(info.breakdown);
             print_statistics.objects_used_material += info.models_volume  * SCALING_FACTOR * SCALING_FACTOR;
             print_statistics.support_used_material += info.supports_volume * SCALING_FACTOR * SCALING_FACTOR;
             ++i;

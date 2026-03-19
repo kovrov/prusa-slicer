@@ -7001,13 +7001,29 @@ static void render_sla_layer_legend(const SLAPrint& print, int layer_idx, int cn
         int area_percent_int = int(std::round(100. * area/display_area));
         ImGui::Text("%s", GUI::format(_u8L("Area fill: %1% %%"), area_percent_int == 0 ? "<1" : std::to_string(area_percent_int)).c_str());
         ImGui::Separator();
-        ImGui::Text("%s", GUI::format(_u8L("Layer time: %1%"), get_time_dhms(time)).c_str());
-        std::string buffer_str = _u8L("Time since start: %1%"); 
+        const auto& bd_vec = print.print_statistics().layers_times_breakdown;
+        if (layer_idx < int(bd_vec.size())) {
+            const auto& bd = bd_vec[layer_idx];
+            auto fmt_s = [](double t) -> std::string {
+                char buf[16];
+                snprintf(buf, sizeof(buf), "%.4gs", t);
+                return buf;
+            };
+            ImGui::Text("%s", GUI::format(
+                _u8L("Layer time: %1% (exp: %2%, lift/retract: %3%, light-off: %4%)"),
+                get_time_dhms(time), fmt_s(bd.exposure), fmt_s(bd.lift), fmt_s(bd.light_off)).c_str());
+        } else {
+            ImGui::Text("%s", GUI::format(_u8L("Layer time: %1%"), get_time_dhms(time)).c_str());
+        }
+        std::string buffer_str = _u8L("Time since start: %1%");
         ImGui::Text("%s", GUI::format(buffer_str, get_time_dhms(time_until_layer)).c_str());
 
-        // The dummy control below uses the assumption that the total time string will be the longest
-        // and forces the width of the window large enough so it does not resize depending on the current value.
-        ImGui::Dummy(ImVec2(ImGui::CalcTextSize(GUI::format(buffer_str, get_time_dhms(82799)).c_str()).x, 0.));
+        // The dummy forces the window wide enough so it does not resize depending on the current value.
+        // Layer time with breakdown is typically the longest line.
+        const std::string layer_time_dummy = GUI::format(
+            _u8L("Layer time: %1% (exp: %2%, lift/retract: %3%, light-off: %4%)"),
+            get_time_dhms(82799), "9999s", "999s", "99.9s");
+        ImGui::Dummy(ImVec2(ImGui::CalcTextSize(layer_time_dummy.c_str()).x, 0.));
         ImGuiPureWrap::end();
     }
 }

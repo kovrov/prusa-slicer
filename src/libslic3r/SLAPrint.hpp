@@ -453,6 +453,13 @@ struct SLAPrintStatistics
     std::vector<double>             layers_times_running_total;
     std::vector<double>             layers_areas;
 
+    struct LayerTimeBreakdown {
+        double exposure  = 0.;
+        double light_off = 0.;
+        double lift      = 0.;
+    };
+    std::vector<LayerTimeBreakdown> layers_times_breakdown;
+
     // Config with the filled in print statistics.
     DynamicConfig           config() const;
     // Config with the statistics keys populated with placeholder strings.
@@ -471,6 +478,7 @@ struct SLAPrintStatistics
         total_weight = 0.;
         layers_times_running_total.clear();
         layers_areas.clear();
+        layers_times_breakdown.clear();
     }
 };
 
