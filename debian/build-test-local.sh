@@ -18,7 +18,9 @@ source "$SCRIPT_DIR/bundled-deps.sh"
 
 SIGNING_KEY="${DEBEMAIL:-kovrov@gmail.com}"
 PPA="ppa:kovrov/prusa-slicer"
-NUMJOBS="${DEB_BUILD_OPTIONS_PARALLEL:-$(nproc)}"
+# Cap at 4 by default — full-tree builds OOM with more parallelism on
+# typical workstations. Override with DEB_BUILD_OPTIONS_PARALLEL=N.
+NUMJOBS="${DEB_BUILD_OPTIONS_PARALLEL:-4}"
 
 VERSION=$(dpkg-parsechangelog -l "$SOURCE_DIR/debian/changelog" -S Version)
 UPSTREAM_VERSION=$(echo "$VERSION" | cut -d- -f1)

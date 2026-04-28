@@ -6,7 +6,6 @@ include /usr/share/dpkg/buildflags.mk
 
 BUILD_TMPDIR = /tmp/prusa-slicer-build
 DEPS_PREFIX = $(BUILD_TMPDIR)/deps-install/usr
-NUMJOBS = 4
 
 %:
 	dh $@
@@ -21,7 +20,7 @@ override_dh_auto_configure:
 		-DBUILD_SHARED_LIBS=OFF \
 		-DCMAKE_POSITION_INDEPENDENT_CODE=ON \
 		-DCMAKE_INSTALL_PREFIX=$(DEPS_PREFIX)
-	cmake --build $(BUILD_TMPDIR)/build-heatshrink -j $(NUMJOBS)
+	cmake --build $(BUILD_TMPDIR)/build-heatshrink
 	DESTDIR= cmake --install $(BUILD_TMPDIR)/build-heatshrink
 
 	# ---- Build NanoSVG ----
@@ -31,7 +30,7 @@ override_dh_auto_configure:
 		-DBUILD_SHARED_LIBS=OFF \
 		-DCMAKE_POSITION_INDEPENDENT_CODE=ON \
 		-DCMAKE_INSTALL_PREFIX=$(DEPS_PREFIX)
-	cmake --build $(BUILD_TMPDIR)/build-nanosvg -j $(NUMJOBS)
+	cmake --build $(BUILD_TMPDIR)/build-nanosvg
 	DESTDIR= cmake --install $(BUILD_TMPDIR)/build-nanosvg
 	# Fix NanoSVG include paths: code uses both #include <nanosvg/nanosvg.h> and #include <nanosvgrast.h>
 	# so INTERFACE_INCLUDE_DIRECTORIES needs both include/ and include/nanosvg/
@@ -47,7 +46,7 @@ override_dh_auto_configure:
 		-DCMAKE_INSTALL_PREFIX=$(DEPS_PREFIX) \
 		-DLibBGCode_BUILD_TESTS=OFF \
 		-DLibBGCode_BUILD_CMD_TOOL=OFF
-	cmake --build $(BUILD_TMPDIR)/build-libbgcode -j $(NUMJOBS)
+	cmake --build $(BUILD_TMPDIR)/build-libbgcode
 	DESTDIR= cmake --install $(BUILD_TMPDIR)/build-libbgcode
 
 	# ---- Configure PrusaSlicer (build dir out-of-tree) ----
@@ -69,7 +68,7 @@ override_dh_auto_configure:
 		"-DCMAKE_CXX_FLAGS=-isystem $(DEPS_PREFIX)/include -DBOOST_PROCESS_VERSION=1"
 
 override_dh_auto_build:
-	dh_auto_build -B $(BUILD_TMPDIR)/build-prusa-slicer -- -j $(NUMJOBS)
+	dh_auto_build -B $(BUILD_TMPDIR)/build-prusa-slicer
 
 override_dh_auto_install:
 	dh_auto_install -B $(BUILD_TMPDIR)/build-prusa-slicer --destdir=debian/prusa-slicer
