@@ -1,8 +1,37 @@
-prusaslicer (2.9.4-0ppa2~questing1) questing; urgency=medium
+prusa-slicer (2.9.4+pm7m-0ppa3~resolute2) resolute; urgency=medium
 
-  * Initial PPA release for Ubuntu 25.10 (Questing Quokka)
+  * Rename binary package from "prusaslicer" to "prusa-slicer" to match
+    the upstream Ubuntu/Debian package name (Replaces/Conflicts the old
+    "prusaslicer" name; same name as upstream means apt picks our higher
+    +pm7m version automatically over upstream 2.9.4+dfsg-N)
+  * Drop boost::system from required Boost components
+    (Ubuntu 26.04 ships Boost 1.90 without a boost_system CMake
+    config; Boost.System has been header-only since 1.69)
+  * Add explicit Build-Depends on Boost atomic, chrono, date-time
+    components (now required by CMake 4.2 + Boost 1.90 modular
+    BoostConfig.cmake — previously satisfied transitively)
+  * Pass -DCMAKE_POLICY_VERSION_MINIMUM=3.5 (CMake 4.x dropped
+    support for cmake_minimum_required below 3.5, which the
+    bundled FindOpenVDB.cmake module still uses)
+  * Bump OpenCASCADE pin to 7.9.2 (resolute ships OCCT 7.9.2;
+    OCCT's version check requires exact MAJOR.MINOR.PATCH match)
+  * Explicitly include <boost/asio/deadline_timer.hpp> in
+    Bonjour.cpp and Serial.cpp (Boost 1.90 no longer pulls it
+    in transitively from <boost/asio.hpp>)
+
+ -- Sergey Kovrov <kovrov@gmail.com>  Tue, 28 Apr 2026 12:00:00 +0000
+
+prusa-slicer (2.9.4+pm7m-0ppa3~resolute1) resolute; urgency=medium
+
+  * Add support for Anycubic SLA resin parameters
+
+ -- Sergey Kovrov <kovrov@gmail.com>  Mon, 27 Apr 2026 12:00:00 +0000
+
+prusa-slicer (2.9.4-0ppa2~resolute1) resolute; urgency=medium
+
+  * Initial PPA release for Ubuntu 26.04 LTS (Resolute Wombat)
   * Build against system libraries where possible
   * Bundle heatshrink, NanoSVG, and LibBGCode (not in Ubuntu repos)
   * Add missing libwebkit2gtk-4.1-dev build dependency
 
- -- Sergey Kovrov <kovrov@gmail.com>  Fri, 14 Feb 2026 12:00:00 +0000
+ -- Sergey Kovrov <kovrov@gmail.com>  Mon, 27 Apr 2026 12:00:00 +0000

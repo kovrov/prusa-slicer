@@ -1,4 +1,4 @@
-Source: prusaslicer
+Source: prusa-slicer
 Section: graphics
 Priority: optional
 Maintainer: Sergey Kovrov <kovrov@gmail.com>
@@ -8,6 +8,9 @@ Build-Depends:
  ninja-build,
  pkg-config,
  libboost-dev (>= 1.83),
+ libboost-atomic-dev,
+ libboost-chrono-dev,
+ libboost-date-time-dev,
  libboost-filesystem-dev,
  libboost-iostreams-dev,
  libboost-locale-dev,
@@ -48,9 +51,11 @@ Standards-Version: 4.6.2
 Homepage: https://github.com/prusa3d/PrusaSlicer
 Rules-Requires-Root: no
 
-Package: prusaslicer
+Package: prusa-slicer
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
+Replaces: prusaslicer
+Conflicts: prusaslicer
 Description: G-code generator for 3D printers (Prusa and others)
  PrusaSlicer takes 3D models (STL, OBJ, AMF, 3MF, STEP) and converts them
  into G-code instructions for FDM printers or layer images for SLA printers.

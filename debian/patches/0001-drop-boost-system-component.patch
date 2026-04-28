@@ -1,0 +1,23 @@
+Description: Drop boost::system from required Boost components
+ Ubuntu Resolute (26.04) ships Boost 1.90 without a separate
+ boost_system CMake config — Boost.System has been header-only since
+ Boost 1.69 (the symbols are inline) and the Ubuntu packagers no
+ longer ship libboost-system1.90-dev. Removing "system" from the
+ find_package COMPONENTS list lets the modular BoostConfig.cmake
+ succeed; the header-only system functionality remains available
+ via the Boost.Headers target pulled in transitively.
+Author: Sergey Kovrov <kovrov@gmail.com>
+Forwarded: not-needed
+Last-Update: 2026-04-27
+
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -370,7 +370,7 @@ endif()
+ # boost::process was introduced first in version 1.64.0,
+ # boost::beast::detail::base64 was introduced first in version 1.66.0
+ set(MINIMUM_BOOST_VERSION "1.83.0")
+-set(_boost_components "system;filesystem;thread;log;locale;regex;chrono;atomic;date_time;iostreams;nowide")
++set(_boost_components "filesystem;thread;log;locale;regex;chrono;atomic;date_time;iostreams;nowide")
+ find_package(Boost ${MINIMUM_BOOST_VERSION} REQUIRED COMPONENTS ${_boost_components})
+
+ find_package(Eigen3 3.3.7 REQUIRED)

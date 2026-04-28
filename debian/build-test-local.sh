@@ -23,10 +23,10 @@ NUMJOBS="${DEB_BUILD_OPTIONS_PARALLEL:-$(nproc)}"
 VERSION=$(dpkg-parsechangelog -l "$SOURCE_DIR/debian/changelog" -S Version)
 UPSTREAM_VERSION=$(echo "$VERSION" | cut -d- -f1)
 
-WORK_DIR="/tmp/prusaslicer-ppa-work"
-TARBALL="$WORK_DIR/prusaslicer_${UPSTREAM_VERSION}.orig.tar.xz"
-EXTRACT_DIR="$WORK_DIR/prusaslicer-${UPSTREAM_VERSION}"
-CHANGES="$WORK_DIR/prusaslicer_${VERSION}_source.changes"
+WORK_DIR="/tmp/prusa-slicer-ppa-work"
+TARBALL="$WORK_DIR/prusa-slicer_${UPSTREAM_VERSION}.orig.tar.xz"
+EXTRACT_DIR="$WORK_DIR/prusa-slicer-${UPSTREAM_VERSION}"
+CHANGES="$WORK_DIR/prusa-slicer_${VERSION}_source.changes"
 
 # ---------------------------------------------------------------------------
 # Step 1: Populate third_party/ if needed
@@ -69,7 +69,7 @@ dpkg-buildpackage -us -uc -j"${NUMJOBS}" -b
 echo ""
 echo "=== Done ==="
 echo "Artifacts in: ${WORK_DIR}/"
-ls "$WORK_DIR/"prusaslicer_*.deb 2>/dev/null || true
+ls "$WORK_DIR/"prusa-slicer_*.deb 2>/dev/null || true
 echo ""
 echo "If the build looks good, upload with:"
 echo "  dput ${PPA} ${CHANGES}"

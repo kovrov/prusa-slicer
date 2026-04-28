@@ -61,12 +61,12 @@ pack_orig_tarball() {
     local UPSTREAM_VERSION="$3"
     local TMP_TAR
 
-    TMP_TAR="$(mktemp /tmp/prusaslicer-git-archive.XXXXXX.tar)"
+    TMP_TAR="$(mktemp /tmp/prusa-slicer-git-archive.XXXXXX.tar)"
 
     # Archive git-tracked files, excluding debian/ (goes in .debian.tar.xz)
     # and deps/ (upstream superbuild with Windows DLLs, not used in PPA build).
     git -C "$SOURCE_DIR" archive \
-        --prefix="prusaslicer-${UPSTREAM_VERSION}/" \
+        --prefix="prusa-slicer-${UPSTREAM_VERSION}/" \
         HEAD \
         ':(exclude)debian' \
         ':(exclude)deps' \
@@ -76,7 +76,7 @@ pack_orig_tarball() {
     # Append third_party/ (not tracked by git, contains bundled deps)
     if [[ -d "$SOURCE_DIR/third_party" ]]; then
         tar --append -f "$TMP_TAR" \
-            --transform "s|^|prusaslicer-${UPSTREAM_VERSION}/|" \
+            --transform "s|^|prusa-slicer-${UPSTREAM_VERSION}/|" \
             -C "$SOURCE_DIR" third_party
     fi
 

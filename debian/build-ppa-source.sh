@@ -29,10 +29,10 @@ VERSION=$(dpkg-parsechangelog -l "$SOURCE_DIR/debian/changelog" -S Version)
 UPSTREAM_VERSION=$(echo "$VERSION" | cut -d- -f1)
 
 # Work entirely in /tmp/ - dpkg-source never sees the git working tree.
-WORK_DIR="/tmp/prusaslicer-ppa-work"
-TARBALL="$WORK_DIR/prusaslicer_${UPSTREAM_VERSION}.orig.tar.xz"
-EXTRACT_DIR="$WORK_DIR/prusaslicer-${UPSTREAM_VERSION}"
-CHANGES="$WORK_DIR/prusaslicer_${VERSION}_source.changes"
+WORK_DIR="/tmp/prusa-slicer-ppa-work"
+TARBALL="$WORK_DIR/prusa-slicer_${UPSTREAM_VERSION}.orig.tar.xz"
+EXTRACT_DIR="$WORK_DIR/prusa-slicer-${UPSTREAM_VERSION}"
+CHANGES="$WORK_DIR/prusa-slicer_${VERSION}_source.changes"
 
 # ---------------------------------------------------------------------------
 # Step 1: Ensure bundled deps are present; re-download only if forced
@@ -66,7 +66,7 @@ cp -r "$SOURCE_DIR/debian" "$EXTRACT_DIR/"
 echo ""
 echo "==> Building signed source package (key: ${SIGNING_KEY})..."
 cd "$EXTRACT_DIR"
-dpkg-buildpackage -S -sa -k"${SIGNING_KEY}"
+dpkg-buildpackage -S -sa -d -k"${SIGNING_KEY}"
 
 # ---------------------------------------------------------------------------
 echo ""

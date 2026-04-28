@@ -4,7 +4,7 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 DPKG_EXPORT_BUILDFLAGS = 1
 include /usr/share/dpkg/buildflags.mk
 
-BUILD_TMPDIR = /tmp/prusaslicer-build
+BUILD_TMPDIR = /tmp/prusa-slicer-build
 DEPS_PREFIX = $(BUILD_TMPDIR)/deps-install/usr
 NUMJOBS = 4
 
@@ -51,7 +51,7 @@ override_dh_auto_configure:
 	DESTDIR= cmake --install $(BUILD_TMPDIR)/build-libbgcode
 
 	# ---- Configure PrusaSlicer (build dir out-of-tree) ----
-	dh_auto_configure -B $(BUILD_TMPDIR)/build-prusaslicer -- \
+	dh_auto_configure -B $(BUILD_TMPDIR)/build-prusa-slicer -- \
 		-G Ninja \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DSLIC3R_STATIC=OFF \
@@ -63,20 +63,21 @@ override_dh_auto_configure:
 		-DCMAKE_PREFIX_PATH=$(DEPS_PREFIX) \
 		-DPrusaSlicer_BUILD_DEPS=OFF \
 		-DCMAKE_POLICY_DEFAULT_CMP0167=NEW \
+		-DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
 		-DOPENVDB_FIND_MODULE_PATH=/usr/lib/x86_64-linux-gnu/cmake/OpenVDB \
 -DSLIC3R_BUILD_TESTS=OFF \
 		"-DCMAKE_CXX_FLAGS=-isystem $(DEPS_PREFIX)/include -DBOOST_PROCESS_VERSION=1"
 
 override_dh_auto_build:
-	dh_auto_build -B $(BUILD_TMPDIR)/build-prusaslicer -- -j $(NUMJOBS)
+	dh_auto_build -B $(BUILD_TMPDIR)/build-prusa-slicer -- -j $(NUMJOBS)
 
 override_dh_auto_install:
-	dh_auto_install -B $(BUILD_TMPDIR)/build-prusaslicer --destdir=debian/prusaslicer
+	dh_auto_install -B $(BUILD_TMPDIR)/build-prusa-slicer --destdir=debian/prusa-slicer
 
 override_dh_auto_test:
 	# Tests require GPU/display, skip in build environment
 	true
 
 override_dh_auto_clean:
-	dh_auto_clean -B $(BUILD_TMPDIR)/build-prusaslicer
+	dh_auto_clean -B $(BUILD_TMPDIR)/build-prusa-slicer
 	rm -rf $(BUILD_TMPDIR)
