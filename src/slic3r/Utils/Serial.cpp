@@ -16,6 +16,7 @@
 #include <stdexcept>
 
 #include <boost/algorithm/string/predicate.hpp>
+#include <boost/asio/deadline_timer.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 #include <boost/optional.hpp>

@@ -19,7 +19,7 @@ include(GenerateExportHeader)
 
 generate_export_header(OCCTWrapper)
 
-find_package(OpenCASCADE 7.8.1 REQUIRED)
+find_package(OpenCASCADE 7.9.2 REQUIRED)
 
 set(OCCT_LIBS
     TKDESTEP
