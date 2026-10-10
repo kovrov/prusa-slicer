@@ -10,9 +10,9 @@ NANOSVG_URL="https://github.com/fltk/nanosvg/archive/${NANOSVG_COMMIT}.zip"
 NANOSVG_SHA256="e859938fbaee4b351bd8a8b3d3c7a75b40c36885ce00b73faa1ce0b98aa0ad34"
 NANOSVG_DIR="nanosvg-${NANOSVG_COMMIT}"
 
-LIBBGCODE_COMMIT="5041c093b33e2748e76d6b326f2251310823f3df"
+LIBBGCODE_COMMIT="6f4ad7ce6b0e638b760199d6611039a610a5a479"
 LIBBGCODE_URL="https://github.com/prusa3d/libbgcode/archive/${LIBBGCODE_COMMIT}.zip"
-LIBBGCODE_SHA256="c323aa196a82d75f08a5b114c95f2d1a019e84b555a196e55d8ea52e5787284c"
+LIBBGCODE_SHA256="1e91c944a52022e8af46b05b463add59b3ac011a5e1982e60891d41149c56144"
 LIBBGCODE_DIR="libbgcode-${LIBBGCODE_COMMIT}"
 
 # Populate third_party/ with all bundled deps (skips already-present dirs).

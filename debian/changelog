@@ -1,3 +1,13 @@
+prusa-slicer (2.9.6+pm7m-0ppa1~resolute1) resolute; urgency=medium
+
+  * Rebase onto upstream release 2.9.6
+  * Add Build-Depends on libhidapi-dev (upstream 2.9.6 dropped the
+    bundled Linux hidapi in favour of the system library)
+  * Bump bundled LibBGCode to 6f4ad7ce (the revision upstream 2.9.6
+    builds against)
+
+ -- Sergey Kovrov <kovrov@gmail.com>  Sat, 10 Oct 2026 13:25:00 -0500
+
 prusa-slicer (2.9.4+pm7m-0ppa3~resolute2) resolute; urgency=medium
 
   * Rename binary package from "prusaslicer" to "prusa-slicer" to match

@@ -47,6 +47,7 @@ Build-Depends:
  libocct-data-exchange-dev,
  libocct-modeling-algorithms-dev,
  libz3-dev,
+ libhidapi-dev,
 Standards-Version: 4.6.2
 Homepage: https://github.com/prusa3d/PrusaSlicer
 Rules-Requires-Root: no
